@@ -38,6 +38,7 @@ class Fragment(val rect: Rect,
 
     lateinit var pixels: ArrayList<Pair<Int, Int>>
     lateinit var inner_pixels: ArrayList<Pair<Int, Int>>
+    lateinit var border_pixels: ArrayList<Pair<Int, Int>>
 
     init {
 
@@ -58,6 +59,7 @@ class Fragment(val rect: Rect,
         max_size = Math.ceil(FUNC_LENGHT * func_scale).toInt()
         pixels = ArrayList()
         inner_pixels = ArrayList()
+        border_pixels = ArrayList()
 
         rect_pixels()
         top()
@@ -74,11 +76,30 @@ class Fragment(val rect: Rect,
     }
 
     fun rect_pixels() {
-        for (x in a.x until  b.x)
-            for (y in a.y until d.y)
-                pixels.add(x to y)
+        for (x in a.x until  b.x) {
+
+            var borderX = false
+            if ((Math.abs(x - a.x) <= borderWidth) or (Math.abs(x - b.x) <= borderWidth)) {
+                borderX = true
+            }
+
+            for (y in a.y until d.y) {
+
+                var borderY = false
+                if ((Math.abs(y - a.y) <= borderWidth) or (Math.abs(y - d.y) <= borderWidth)) {
+                    borderY = true
+                }
+                if(borderX or borderY) {
+                    border_pixels.add(x to y);
+                }
+
+                pixels.add(x to y);
+            }
+
+        }
 
     }
+
 
     fun left() {
         if (leftFr == null)
@@ -88,27 +109,25 @@ class Fragment(val rect: Rect,
         val (mode, offset) = leftFr.right_mode
         if (!mode) {
             for (x in (a.x - third_width) until (a.x))
-                for (y in (b.y + offset) until (b.y + offset + third_height))
-                    if (left_function(x - a.x, y - b.y - offset))
+                for (y in (b.y + offset) until (b.y + offset + third_height)) {
+                    val tmp = left_function(x - a.x, y - b.y - offset)
+                    if (tmp.first)
                         pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y);
+                    }
+                }
         } else {
             for (x in (a.x) until (a.x + third_width))
-                for (y in (b.y + offset) until (b.y + offset + third_height))
-                    if (right_function(x - a.x, y - b.y - offset))
+                for (y in (b.y + offset) until (b.y + offset + third_height)) {
+                    val tmp = right_function(x - a.x, y - b.y - offset)
+                    if (tmp.first)
                         inner_pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y);
+                    }
+                }
         }
-
-//        if (mode == 3) {
-//            for (x in (a.x)..(a.x + third_width))
-//                for (y in (b.y + third_height)..(b.y + third_height * 2))
-//                    if (right_function(x - a.x, y - b.y - third_height))
-//                        inner_pixels.add(x to y)
-//            for (x in (a.x - third_width)..(a.x))
-//                for (y in (b.y + third_height)..(b.y + third_height * 2))
-//                    if (left_function(x - a.x, y - b.y - third_height))
-//                        pixels.add(x to y)
-//        }
-
     }
 
     fun right(): Pair<Boolean, Int>?{
@@ -121,26 +140,25 @@ class Fragment(val rect: Rect,
         val mode = Random().nextBoolean()
         if (mode) {
             for (x in b.x until (b.x + third_width))
-                for (y in (b.y + rnd_offset) until (b.y + rnd_offset + third_height))
-                    if (right_function(x - b.x, y - b.y - rnd_offset))
+                for (y in (b.y + rnd_offset) until (b.y + rnd_offset + third_height)) {
+                    val tmp = right_function(x - b.x, y - b.y - rnd_offset)
+                    if (tmp.first)
                         pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y);
+                    }
+                }
         } else {
             for (x in (b.x - third_width) until (b.x))
-                for (y in (b.y + rnd_offset) until (b.y + rnd_offset + third_height))
-                    if (left_function(x - b.x, y - b.y - rnd_offset))
+                for (y in (b.y + rnd_offset) until (b.y + rnd_offset + third_height)) {
+                    val tmp = left_function(x - b.x, y - b.y - rnd_offset)
+                    if (tmp.first)
                         inner_pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y);
+                    }
+                }
         }
-
-//        if (mode == 3) {
-//            for (x in b.x..(b.x + third_width))
-//                for (y in (b.y + rnd_offset)..(b.y + rnd_offset + third_height))
-//                    if (right_function(x - b.x, y - b.y - rnd_offset))
-//                        pixels.add(x to y)
-//            for (x in (b.x - third_width) .. (b.x))
-//                for (y in (b.y + rnd_offset) .. (b.y + rnd_offset + third_height))
-//                    if (left_function(x - b.x, y - b.y - rnd_offset))
-//                        inner_pixels.add(x to y)
-//        }
         return mode to rnd_offset
     }
 
@@ -154,25 +172,25 @@ class Fragment(val rect: Rect,
         val mode = Random().nextBoolean()
         if (mode) {
             for (x in (d.x + rnd_offset) until (d.x + 2 * third_width + rnd_offset))
-                for (y in (d.y) until (d.y + third_height))
-                    if (top_function(x - d.x - rnd_offset, y - d.y))
+                for (y in (d.y) until (d.y + third_height)) {
+                    val tmp = top_function(x - d.x - rnd_offset, y - d.y)
+                    if (tmp.first)
                         pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y);
+                    }
+                }
         } else {
             for (x in (d.x + rnd_offset) until (d.x + 2 * third_width + rnd_offset))
-                for (y in (d.y - third_height) until (d.y))
-                    if (bottom_function(x - d.x - rnd_offset, y - d.y))
+                for (y in (d.y - third_height) until (d.y)) {
+                    val tmp = bottom_function(x - d.x - rnd_offset, y - d.y)
+                    if (tmp.first)
                         inner_pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y)
+                    }
+                }
         }
-//        if (mode == 3) {
-//            for (x in (d.x + rnd_offset) .. (d.x + third_width + rnd_offset))
-//                for (y in (d.y - third_height) .. (d.y))
-//                    if (bottom_function(x - d.x - rnd_offset, y - d.y))
-//                        inner_pixels.add(x to y)
-//            for (x in (d.x + rnd_offset) .. (d.x + third_width + rnd_offset))
-//                for (y in (d.y) .. (d.y + third_height))
-//                    if (top_function(x - d.x - rnd_offset, y - d.y))
-//                        pixels.add(x to y)
-//        }
         return mode to rnd_offset
     }
 
@@ -184,35 +202,46 @@ class Fragment(val rect: Rect,
         val (mode, offset) = topFr.bottom_mode
         if (!mode) {
             for (x in (d.x + offset) until (d.x + third_width + offset))
-                for (y in (a.y - third_height) until (a.y))
-                    if (bottom_function(x - d.x - offset, y - a.y))
+                for (y in (a.y - third_height) until (a.y)) {
+                    val tmp = bottom_function(x - d.x - offset, y - a.y)
+                    if (tmp.first)
                         pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y);
+                    }
+                }
         } else {
             for (x in (d.x + offset) until (d.x + third_width + offset))
-                for (y in (a.y) until (a.y + third_height))
-                    if (top_function(x - d.x- offset, y - a.y))
+                for (y in (a.y) until (a.y + third_height)) {
+                    val tmp = top_function(x - d.x - offset, y - a.y)
+                    if (tmp.first)
                         inner_pixels.add(x to y)
+                    if(tmp.second) {
+                        border_pixels.add(x to y);
+                    }
+                }
         }
-//        if (mode == 3) {
-//            for (x in (d.x + third_width) .. (d.x + 2 * third_width))
-//                for (y in (a.y) .. (a.y + third_height))
-//                    if (top_function(x - d.x - third_width, y - a.y))
-//                        inner_pixels.add(x to y)
-//            for (x in (d.x + third_width) .. (d.x + 2 * third_width))
-//                for (y in (a.y - third_height) .. (a.y))
-//                    if (bottom_function(x - d.x - third_width, y - a.y))
-//                        pixels.add(x to y)
-//        }
     }
 
-    fun right_function(x: Int, y: Int): Boolean{
+    fun right_function(x: Int, y: Int): Pair<Boolean, Boolean> {
+        // возвращает истину, если это часть изображения
+        // возвращает истину, если это часть обводки
+
         val f = (6 - (x / func_scale - DX).pow(3) + (x / func_scale - DX) * 3.07) / 3
         if (f > 0) {
+            var second = false;
+            if(
+                (Math.abs(y - (-sqrt(f) * func_scale + FUNC_WIDTH / 2 * func_scale)) <= borderWidth) or
+                (Math.abs(y - (sqrt(f) * func_scale + FUNC_WIDTH / 2 * func_scale)) <= borderWidth)
+            ) {
+                second = true;
+            }
             val a = (y >= -sqrt(f) * func_scale + FUNC_WIDTH / 2 * func_scale)
             val b = (y <= sqrt(f) * func_scale + FUNC_WIDTH / 2 * func_scale)
-            return a and b
+
+            return ((a and b) to second);
         }
-        return false
+        return false to false
     }
 
     fun left_function(x: Int, y: Int) = right_function(-x, y)
